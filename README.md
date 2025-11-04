@@ -135,7 +135,7 @@ Bash
 python app.py
 Start the Frontend App second (in terminal 2):
 
-Bash
+Bash 
 
 npm run dev
 Open your browser to http://localhost:5173 and the app will be running.
