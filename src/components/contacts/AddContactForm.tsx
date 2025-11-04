@@ -6,6 +6,25 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { UserPlus } from "lucide-react";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  contact_name: z.string()
+    .trim()
+    .min(1, "Name is required")
+    .max(100, "Name must be less than 100 characters"),
+  contact_phone: z.string()
+    .trim()
+    .min(10, "Phone number must be at least 10 characters")
+    .max(20, "Phone number must be less than 20 characters")
+    .regex(/^[+]?[0-9\s()-]+$/, "Invalid phone number format"),
+  contact_email: z.string()
+    .trim()
+    .email("Invalid email address")
+    .max(255, "Email must be less than 255 characters")
+    .optional()
+    .or(z.literal(""))
+});
 
 interface AddContactFormProps {
   onContactAdded: () => void;
@@ -22,17 +41,32 @@ const AddContactForm = ({ onContactAdded }: AddContactFormProps) => {
     setIsSubmitting(true);
 
     try {
+      // Validate input data
+      const validationResult = contactSchema.safeParse({
+        contact_name: name,
+        contact_phone: phone,
+        contact_email: email,
+      });
+
+      if (!validationResult.success) {
+        const firstError = validationResult.error.errors[0];
+        toast.error(firstError.message);
+        setIsSubmitting(false);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       
       if (!user) {
         throw new Error("User not authenticated");
       }
 
+      const validated = validationResult.data;
       const { error } = await supabase.from("emergency_contacts").insert({
         user_id: user.id,
-        contact_name: name,
-        contact_phone: phone,
-        contact_email: email || null,
+        contact_name: validated.contact_name,
+        contact_phone: validated.contact_phone,
+        contact_email: validated.contact_email || null,
       });
 
       if (error) throw error;

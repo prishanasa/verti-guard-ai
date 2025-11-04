@@ -4,6 +4,12 @@ import { Activity, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { mockFallData } from "@/data/mockSensorData";
+import { z } from "zod";
+
+const apiResponseSchema = z.object({
+  status: z.string(),
+  confidence: z.number().min(0).max(1),
+});
 
 interface MonitorButtonProps {
   onStatusChange: (status: "safe" | "alert") => void;
@@ -31,7 +37,15 @@ const MonitorButton = ({ onStatusChange }: MonitorButtonProps) => {
       }
 
       const result = await response.json();
-      const { status, confidence } = result;
+      
+      // Validate API response
+      const validationResult = apiResponseSchema.safeParse(result);
+      if (!validationResult.success) {
+        console.error("Invalid API response:", validationResult.error);
+        throw new Error("Invalid response from AI service");
+      }
+
+      const { status, confidence } = validationResult.data;
 
       // Get current user
       const { data: { user } } = await supabase.auth.getUser();
