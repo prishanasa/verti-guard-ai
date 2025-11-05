@@ -21,16 +21,33 @@ const ManualAlertButton = ({ onStatusChange }: ManualAlertButtonProps) => {
         throw new Error("User not authenticated");
       }
 
-      const { error } = await supabase.from("events").insert({
+      const { data: event, error } = await supabase.from("events").insert({
         user_id: user.id,
         event_type: "Manual Alert",
         confidence_score: null,
-      });
+      }).select().single();
 
       if (error) throw error;
 
+      // Notify emergency contacts
+      const { data: notifyData, error: notifyError } = await supabase.functions.invoke('notify-contacts', {
+        body: { 
+          eventType: 'Manual Alert',
+          eventId: event.id 
+        }
+      });
+
+      if (notifyError) {
+        console.error("Notification error:", notifyError);
+      }
+
       onStatusChange("alert");
-      toast.error("Manual alert sent! Emergency contacts notified.");
+      
+      if (notifyData?.success) {
+        toast.error(`Manual alert sent! ${notifyData.notified} emergency contact(s) notified.`);
+      } else {
+        toast.error("Manual alert sent! (No emergency contacts configured)");
+      }
     } catch (error) {
       console.error("Manual alert error:", error);
       toast.error("Failed to send manual alert");

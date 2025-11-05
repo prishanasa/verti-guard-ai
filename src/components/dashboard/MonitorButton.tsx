@@ -55,18 +55,35 @@ const MonitorButton = ({ onStatusChange }: MonitorButtonProps) => {
       }
 
       // Insert event into database
-      const { error } = await supabase.from("events").insert({
+      const { data: event, error } = await supabase.from("events").insert({
         user_id: user.id,
         event_type: status,
         confidence_score: confidence,
-      });
+      }).select().single();
 
       if (error) throw error;
 
       // Update UI status
       if (status === "Fall Detected") {
+        // Notify emergency contacts for falls
+        const { data: notifyData, error: notifyError } = await supabase.functions.invoke('notify-contacts', {
+          body: { 
+            eventType: 'Fall Detected',
+            eventId: event.id 
+          }
+        });
+
+        if (notifyError) {
+          console.error("Notification error:", notifyError);
+        }
+
         onStatusChange("alert");
-        toast.error(`Fall Detected! Confidence: ${(confidence * 100).toFixed(1)}%`);
+        
+        if (notifyData?.success) {
+          toast.error(`Fall Detected! Confidence: ${(confidence * 100).toFixed(1)}%. ${notifyData.notified} contact(s) notified.`);
+        } else {
+          toast.error(`Fall Detected! Confidence: ${(confidence * 100).toFixed(1)}%`);
+        }
       } else {
         onStatusChange("safe");
         toast.success(`Normal Activity (${(confidence * 100).toFixed(1)}% confidence)`);

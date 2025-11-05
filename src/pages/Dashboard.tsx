@@ -4,6 +4,8 @@ import StatusCard from "@/components/dashboard/StatusCard";
 import MonitorButton from "@/components/dashboard/MonitorButton";
 import ManualAlertButton from "@/components/dashboard/ManualAlertButton";
 import EventFeed from "@/components/dashboard/EventFeed";
+import FallPatternAnalysis from "@/components/dashboard/FallPatternAnalysis";
+import SafetyChatbot from "@/components/dashboard/SafetyChatbot";
 
 const Dashboard = () => {
   const [status, setStatus] = useState<"safe" | "alert">("safe");
@@ -21,6 +23,11 @@ const Dashboard = () => {
         <div className="flex flex-col sm:flex-row gap-4">
           <MonitorButton onStatusChange={setStatus} />
           <ManualAlertButton onStatusChange={setStatus} />
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <FallPatternAnalysis />
+          <SafetyChatbot />
         </div>
 
         <EventFeed />
