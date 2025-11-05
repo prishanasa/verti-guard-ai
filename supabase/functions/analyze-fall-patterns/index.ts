@@ -30,7 +30,7 @@ serve(async (req) => {
       .from('events')
       .select('*')
       .eq('user_id', user.id)
-      .order('created_at', { ascending: false })
+      .order('timestamp', { ascending: false })
       .limit(50);
 
     if (eventsError) throw eventsError;
@@ -58,7 +58,7 @@ serve(async (req) => {
       recentEvents: events.slice(0, 10).map(e => ({
         type: e.event_type,
         confidence: e.confidence_score,
-        timestamp: e.created_at
+        timestamp: e.timestamp
       }))
     };
 
