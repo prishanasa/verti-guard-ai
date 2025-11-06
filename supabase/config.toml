@@ -1,1 +1,13 @@
 project_id = "ywvtswxakwoaelmprigp"
+
+[functions.safety-chatbot]
+verify_jwt = false
+
+[functions.analyze-fall-patterns]
+verify_jwt = true
+
+[functions.notify-contacts]
+verify_jwt = true
+
+[functions.predict-fall]
+verify_jwt = true

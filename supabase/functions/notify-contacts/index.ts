@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.78.0";
+import { Resend } from "https://esm.sh/resend@2.0.0";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -48,54 +49,63 @@ serve(async (req) => {
     // Get user profile for additional info
     const { data: profile } = await supabase
       .from('profiles')
-      .select('display_name')
-      .eq('user_id', user.id)
+      .select('full_name')
+      .eq('id', user.id)
       .single();
 
-    const userName = profile?.display_name || user.email || 'A user';
+    const userName = profile?.full_name || user.email || 'User';
     
-    // Log notifications (in a real app, you would send SMS/email here)
-    const notifications = contacts.map(contact => ({
-      contact_id: contact.id,
-      event_id: eventId,
-      notification_type: 'sms',
-      status: 'simulated',
-      sent_at: new Date().toISOString(),
-      message: `ALERT: ${userName} has triggered a ${eventType} alert. Please check on them immediately.`
-    }));
+    // Initialize Resend
+    const resend = new Resend(Deno.env.get("RESEND_API_KEY"));
 
-    console.log('Simulated notifications sent:', notifications);
+    // Send emails to all contacts
+    const emailPromises = contacts.map(async (contact) => {
+      try {
+        const { data, error } = await resend.emails.send({
+          from: "Fall Detection Alert <onboarding@resend.dev>",
+          to: [contact.email],
+          subject: `⚠️ ${eventType} - ${userName}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h1 style="color: #dc2626;">⚠️ Emergency Alert</h1>
+              <p style="font-size: 18px; margin: 20px 0;">
+                <strong>${eventType}</strong> has been detected for <strong>${userName}</strong>.
+              </p>
+              <div style="background-color: #fee2e2; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 5px 0;"><strong>Contact:</strong> ${contact.name}</p>
+                <p style="margin: 5px 0;"><strong>Phone:</strong> ${contact.phone_number}</p>
+                <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date().toLocaleString()}</p>
+              </div>
+              <p style="color: #666; margin-top: 20px;">
+                Please check on ${userName} immediately. This is an automated alert from the Fall Detection System.
+              </p>
+            </div>
+          `,
+        });
 
-    // In production, integrate with:
-    // - Twilio for SMS: https://www.twilio.com/docs/sms
-    // - SendGrid/Resend for Email
-    // Example Twilio integration:
-    /*
-    const TWILIO_ACCOUNT_SID = Deno.env.get('TWILIO_ACCOUNT_SID');
-    const TWILIO_AUTH_TOKEN = Deno.env.get('TWILIO_AUTH_TOKEN');
-    const TWILIO_PHONE = Deno.env.get('TWILIO_PHONE_NUMBER');
+        if (error) {
+          console.error(`Failed to send email to ${contact.email}:`, error);
+          return false;
+        }
+        
+        console.log(`Email sent to ${contact.email}:`, data);
+        return true;
+      } catch (error) {
+        console.error(`Error sending to ${contact.email}:`, error);
+        return false;
+      }
+    });
 
-    for (const contact of contacts) {
-      const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
-      await fetch(twilioUrl, {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`),
-          'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-          To: contact.contact_phone,
-          From: TWILIO_PHONE,
-          Body: `ALERT: ${userName} has triggered a ${eventType}. Please check on them.`
-        })
-      });
-    }
-    */
+    const results = await Promise.all(emailPromises);
+    const successCount = results.filter(Boolean).length;
+    
+    console.log(`Sent ${successCount}/${contacts.length} email notifications for ${eventType}`);
 
     return new Response(JSON.stringify({ 
       success: true, 
-      notified: contacts.length,
-      notifications 
+      notified: successCount,
+      total: contacts.length,
+      message: `Notified ${successCount} of ${contacts.length} emergency contact(s)` 
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });

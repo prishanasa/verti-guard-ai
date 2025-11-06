@@ -23,21 +23,16 @@ const MonitorButton = ({ onStatusChange }: MonitorButtonProps) => {
     toast.info("Starting monitoring...");
 
     try {
-      // Call external AI API
-      const response = await fetch("http://localhost:5000/predict", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ window: mockFallData }),
+      // Call AI-powered fall detection service
+      const { data: result, error: predictError } = await supabase.functions.invoke('predict-fall', {
+        body: { sensorData: mockFallData }
       });
 
-      if (!response.ok) {
-        throw new Error("AI API request failed");
+      if (predictError) {
+        console.error("Prediction error:", predictError);
+        throw new Error("Failed to analyze sensor data");
       }
 
-      const result = await response.json();
-      
       // Validate API response
       const validationResult = apiResponseSchema.safeParse(result);
       if (!validationResult.success) {
@@ -90,7 +85,7 @@ const MonitorButton = ({ onStatusChange }: MonitorButtonProps) => {
       }
     } catch (error) {
       console.error("Monitoring error:", error);
-      toast.error("Failed to connect to AI service. Make sure the Flask server is running at http://localhost:5000");
+      toast.error("Failed to analyze sensor data. Please try again.");
     } finally {
       setIsMonitoring(false);
     }
