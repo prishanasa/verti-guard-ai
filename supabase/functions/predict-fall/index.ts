@@ -80,7 +80,6 @@ Max Gyroscope Magnitude: ${dataSummary.maxGyroMagnitude.toFixed(2)}
 Is this a fall or normal activity?`
           }
         ],
-        temperature: 0.3,
       }),
     });
 
