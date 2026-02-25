@@ -16,25 +16,25 @@ export type Database = {
     Tables: {
       emergency_contacts: {
         Row: {
-          contact_email: string | null
+          contact_email: string
           contact_name: string
-          contact_phone: string
+          contact_phone: string | null
           created_at: string | null
           id: string
           user_id: string
         }
         Insert: {
-          contact_email?: string | null
+          contact_email: string
           contact_name: string
-          contact_phone: string
+          contact_phone?: string | null
           created_at?: string | null
           id?: string
           user_id: string
         }
         Update: {
-          contact_email?: string | null
+          contact_email?: string
           contact_name?: string
-          contact_phone?: string
+          contact_phone?: string | null
           created_at?: string | null
           id?: string
           user_id?: string
