@@ -87,6 +87,12 @@ Alerts timeline showing detected normal activities and fall events
 AI Safety Assistant chatbot for guidance and preventive tips
 
 Live Demo: https://verti-guard-ai.vercel.app/
+Live Chatbot
+<img width="613" height="582" alt="image" src="https://github.com/user-attachments/assets/61a20590-df60-4642-90c2-9469212e5b62" />
+<img width="1397" height="793" alt="image" src="https://github.com/user-attachments/assets/55fe0b32-2819-47bb-972c-d67a59c2aaba" />
+Live updates:
+<img width="507" height="522" alt="image" src="https://github.com/user-attachments/assets/d08edf6f-1ef0-421f-9620-a8eeb4f3669e" />
+
 
 ⚙️ Setup & Installation
 Prerequisites
@@ -165,3 +171,5 @@ Model fine-tuning using additional real-world fall datasets
 Edge deployment for on-device inference
 
 Enhanced evaluation pipeline with precision-recall trade-off tuning
+
+
