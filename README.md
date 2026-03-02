@@ -6,17 +6,17 @@ This project demonstrates a full-stack machine learning pipeline, including mode
 
 🚀 Key Features
 
-Deep Learning Fall Detection: 1D-CNN model processes 6-axis time-series sensor data to classify fall vs normal activity in real time
+>Deep Learning Fall Detection: 1D-CNN model processes 6-axis time-series sensor data to classify fall vs normal activity in real time
 
-Safety-First Optimization: Model optimized for high Recall to minimize missed fall events in safety-critical scenarios
+>Safety-First Optimization: Model optimized for high Recall to minimize missed fall events in safety-critical scenarios
 
-Real-Time Alerts Dashboard: Logs and visualizes detected events dynamically for monitoring
+>Real-Time Alerts Dashboard: Logs and visualizes detected events dynamically for monitoring
 
-AI Safety Assistant: Interactive chatbot providing fall-prevention tips and emergency guidance
+>AI Safety Assistant: Interactive chatbot providing fall-prevention tips and emergency guidance
 
-Full-Stack ML Deployment: End-to-end integration of deep learning model, backend API, database, and frontend UI
+>Full-Stack ML Deployment: End-to-end integration of deep learning model, backend API, database, and frontend UI
 
-Secure Authentication: User authentication and event storage using Supabase
+>Secure Authentication: User authentication and event storage using Supabase
 
 🏗️ System Architecture
 
